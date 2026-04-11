@@ -8,7 +8,7 @@
 *{box-sizing:border-box}
 html,body{
   margin:0;
-  background:#0b0f14;
+  background:#0b1117;
   color:#fff;
   font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;
 }
@@ -17,89 +17,83 @@ body{
   display:flex;
   justify-content:center;
 }
-button{
-  font:inherit;
-}
+button{font:inherit}
 .app{
   width:100%;
   max-width:560px;
   min-height:100svh;
-  padding:14px 14px calc(22px + env(safe-area-inset-bottom));
+  padding:14px 14px calc(20px + env(safe-area-inset-bottom));
 }
 .title{
+  margin:8px 0 6px;
+  text-align:center;
   font-size:30px;
   font-weight:900;
   letter-spacing:.08em;
-  text-align:center;
-  margin:10px 0 6px;
 }
 .sub{
-  text-align:center;
-  color:rgba(255,255,255,.7);
-  font-size:13px;
-  line-height:1.5;
   margin:0 0 14px;
+  text-align:center;
+  color:rgba(255,255,255,.72);
+  font-size:13px;
+  line-height:1.55;
 }
 .panel{
-  background:rgba(255,255,255,.06);
-  border:1px solid rgba(255,255,255,.1);
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.09);
   border-radius:18px;
   padding:12px;
-  box-shadow:0 10px 30px rgba(0,0,0,.28);
+  box-shadow:0 12px 28px rgba(0,0,0,.3);
 }
-.topbar{
+.top{
   display:grid;
   grid-template-columns:1fr auto 1fr;
   gap:10px;
   align-items:center;
   margin-bottom:12px;
 }
-.scoreBox{
-  background:rgba(255,255,255,.06);
-  border:1px solid rgba(255,255,255,.1);
+.score{
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.09);
   border-radius:14px;
   padding:10px 12px;
 }
-.scoreBox.right{
-  text-align:right;
-}
-.label{
+.score.right{text-align:right}
+.cap{
   font-size:12px;
   color:rgba(255,255,255,.62);
-  margin-bottom:3px;
+  margin-bottom:4px;
 }
-.value{
+.num{
   font-size:28px;
   font-weight:900;
   line-height:1;
 }
-.turnBox{
+.turn{
   text-align:center;
 }
 .turnText{
-  font-size:13px;
-  color:rgba(255,255,255,.75);
+  font-size:12px;
+  color:rgba(255,255,255,.62);
 }
-.turnStone{
+.turnMain{
   margin-top:4px;
-  display:inline-flex;
+  display:flex;
   align-items:center;
+  justify-content:center;
   gap:8px;
   font-weight:800;
 }
-.stoneMini{
+.dot{
   width:18px;
   height:18px;
   border-radius:50%;
-  border:1px solid rgba(255,255,255,.22);
-  box-shadow:inset 0 1px 2px rgba(255,255,255,.08), 0 1px 2px rgba(0,0,0,.35);
+  border:1px solid rgba(255,255,255,.18);
+  box-shadow:inset 0 1px 2px rgba(255,255,255,.08),0 1px 3px rgba(0,0,0,.35);
 }
-.black{ background:#121212; }
-.white{ background:#eaeaea; }
+.dot.black{background:#121212}
+.dot.white{background:#ececec}
 
-.boardWrap{
-  position:relative;
-}
 .board{
   width:100%;
   aspect-ratio:1/1;
@@ -107,7 +101,6 @@ button{
   grid-template-columns:repeat(6,1fr);
   grid-template-rows:repeat(6,1fr);
   gap:6px;
-  user-select:none;
 }
 .cell{
   position:relative;
@@ -116,54 +109,54 @@ button{
   background:
     linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,0)),
     #17653b;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.05),
-    0 5px 12px rgba(0,0,0,.18);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 4px 10px rgba(0,0,0,.2);
   overflow:hidden;
   cursor:pointer;
 }
-.cell:disabled{
-  cursor:default;
-}
+.cell:disabled{cursor:default}
 .cell.valid{
-  outline:2px solid rgba(255,255,255,.2);
+  outline:2px solid rgba(255,255,255,.18);
 }
 .cell.valid::after{
   content:"";
   position:absolute;
-  inset:auto;
+  left:50%;
+  top:50%;
   width:10px;
   height:10px;
   border-radius:50%;
-  background:rgba(255,255,255,.45);
-  left:50%;
-  top:50%;
   transform:translate(-50%,-50%);
+  background:rgba(255,255,255,.4);
 }
-.cell.flash{
-  animation:cellFlash .35s ease;
+.cell.lastMark{
+  box-shadow:
+    inset 0 0 0 2px rgba(255,220,120,.85),
+    inset 0 1px 0 rgba(255,255,255,.05),
+    0 0 0 2px rgba(255,220,120,.25),
+    0 4px 10px rgba(0,0,0,.2);
 }
-@keyframes cellFlash{
-  0%{ transform:scale(1); filter:brightness(1); }
-  40%{ transform:scale(1.04); filter:brightness(1.18); }
-  100%{ transform:scale(1); filter:brightness(1); }
+.cell.flip{
+  animation:pop .22s ease;
+}
+@keyframes pop{
+  0%{transform:scale(1)}
+  50%{transform:scale(1.04)}
+  100%{transform:scale(1)}
 }
 .stone{
   position:absolute;
   inset:13%;
   border-radius:50%;
-  border:1px solid rgba(255,255,255,.14);
-  box-shadow:
-    inset 0 2px 4px rgba(255,255,255,.08),
-    0 5px 10px rgba(0,0,0,.28);
+  border:1px solid rgba(255,255,255,.15);
+  box-shadow:inset 0 2px 4px rgba(255,255,255,.08),0 5px 10px rgba(0,0,0,.28);
 }
 .stone.black{
-  background:radial-gradient(circle at 35% 30%, #3b3b3b, #101010 70%);
+  background:radial-gradient(circle at 35% 30%, #3a3a3a, #0e0e0e 72%);
 }
 .stone.white{
-  background:radial-gradient(circle at 35% 30%, #ffffff, #d8d8d8 72%);
+  background:radial-gradient(circle at 35% 30%, #ffffff, #d9d9d9 72%);
 }
-.symbol{
+.mark{
   position:absolute;
   inset:0;
   display:flex;
@@ -171,15 +164,9 @@ button{
   justify-content:center;
   font-size:clamp(24px,5vw,34px);
   font-weight:900;
-  opacity:0;
-  transform:scale(.82);
-  transition:opacity .15s ease, transform .15s ease;
+  color:#fff7d1;
+  text-shadow:0 2px 6px rgba(0,0,0,.35);
   pointer-events:none;
-  text-shadow:0 2px 4px rgba(0,0,0,.28);
-}
-.cell.show-symbol .symbol{
-  opacity:1;
-  transform:scale(1);
 }
 .info{
   margin-top:12px;
@@ -188,21 +175,16 @@ button{
 }
 .box{
   background:rgba(255,255,255,.05);
-  border:1px solid rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.09);
   border-radius:14px;
   padding:12px;
 }
-.boxTitle{
-  font-size:12px;
-  color:rgba(255,255,255,.62);
-  margin-bottom:5px;
-}
-.message{
+.msg{
   min-height:44px;
-  line-height:1.5;
   font-size:14px;
+  line-height:1.55;
 }
-.legend{
+.tags{
   display:flex;
   flex-wrap:wrap;
   gap:8px;
@@ -212,27 +194,27 @@ button{
   border-radius:999px;
   font-size:12px;
   background:rgba(255,255,255,.08);
-  border:1px solid rgba(255,255,255,.09);
+  border:1px solid rgba(255,255,255,.08);
 }
 .controls{
   display:flex;
   gap:10px;
   margin-top:12px;
 }
-.ctrlBtn{
+.btn{
   flex:1;
   border:none;
   border-radius:14px;
   padding:14px 12px;
-  font-weight:900;
   color:#fff;
-  background:linear-gradient(180deg, #3d6df7, #274fca);
-  box-shadow:0 8px 18px rgba(39,79,202,.28);
+  font-weight:900;
+  background:linear-gradient(180deg,#3c70ff,#264fca);
+  box-shadow:0 10px 20px rgba(38,79,202,.28);
 }
-.ctrlBtn.secondary{
+.btn.sub{
   background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.1);
   box-shadow:none;
-  border:1px solid rgba(255,255,255,.12);
 }
 .overlay{
   position:fixed;
@@ -248,9 +230,9 @@ button{
   width:min(100%,460px);
   border-radius:22px;
   padding:22px 18px 18px;
-  background:#111821;
+  background:#121a23;
   border:1px solid rgba(255,255,255,.1);
-  box-shadow:0 20px 40px rgba(0,0,0,.4);
+  box-shadow:0 20px 40px rgba(0,0,0,.42);
   text-align:center;
 }
 .resultTitle{
@@ -259,9 +241,9 @@ button{
   margin:0 0 8px;
 }
 .resultSub{
+  margin:0 0 16px;
   color:rgba(255,255,255,.74);
   line-height:1.6;
-  margin:0 0 16px;
 }
 .resultScores{
   display:grid;
@@ -275,20 +257,18 @@ button{
   background:rgba(255,255,255,.05);
   border:1px solid rgba(255,255,255,.08);
 }
-.resultScore .big{
+.big{
   font-size:34px;
   font-weight:900;
   line-height:1;
   margin-top:2px;
 }
-.hidden{
-  display:none!important;
-}
+.hidden{display:none!important}
 .note{
   margin-top:8px;
-  color:rgba(255,255,255,.5);
-  font-size:12px;
   text-align:center;
+  font-size:12px;
+  color:rgba(255,255,255,.52);
   line-height:1.5;
 }
 </style>
@@ -297,69 +277,66 @@ button{
 <div class="app">
   <div class="title">ウラオセロ</div>
   <p class="sub">
-    石を置くと裏のマークが見える。<br>
-    同じマークを2回引くと、もう1回打てる。 でも一部はウソ。
+    各マスに裏マークあり。<br>
+    最後に置いた1マスのマークだけ、次の自分の番まで表示。<br>
+    同じマークのマスに置けたら、もう一度打てる。
   </p>
 
   <div class="panel">
-    <div class="topbar">
-      <div class="scoreBox">
-        <div class="label">黒</div>
-        <div class="value" id="blackCount">2</div>
+    <div class="top">
+      <div class="score">
+        <div class="cap">黒</div>
+        <div class="num" id="blackCount">2</div>
       </div>
 
-      <div class="turnBox">
+      <div class="turn">
         <div class="turnText">手番</div>
-        <div class="turnStone">
-          <span class="stoneMini black" id="turnStone"></span>
-          <span id="turnLabel">黒</span>
+        <div class="turnMain">
+          <div class="dot black" id="turnDot"></div>
+          <div id="turnLabel">黒</div>
         </div>
       </div>
 
-      <div class="scoreBox right">
-        <div class="label">白</div>
-        <div class="value" id="whiteCount">2</div>
+      <div class="score right">
+        <div class="cap">白</div>
+        <div class="num" id="whiteCount">2</div>
       </div>
     </div>
 
-    <div class="boardWrap">
-      <div class="board" id="board"></div>
-    </div>
+    <div class="board" id="board"></div>
 
     <div class="info">
       <div class="box">
-        <div class="boxTitle">現在の状態</div>
-        <div class="message" id="message">
-          黒の番です。置くとマークが一瞬見えます。
-        </div>
+        <div class="cap">現在の状態</div>
+        <div class="msg" id="message">黒の番です。</div>
       </div>
 
       <div class="box">
-        <div class="boxTitle">ルール要点</div>
-        <div class="legend">
+        <div class="cap">ルール要点</div>
+        <div class="tags">
           <div class="tag">6×6</div>
           <div class="tag">基本はリバーシ</div>
-          <div class="tag">同じマーク2回で連続手番</div>
-          <div class="tag">ウソマスあり</div>
+          <div class="tag">最後の1マスだけ表示</div>
+          <div class="tag">同じマークで連続手番</div>
         </div>
       </div>
     </div>
 
     <div class="controls">
-      <button class="ctrlBtn" id="restartBtn">最初から</button>
-      <button class="ctrlBtn secondary" id="toggleHintBtn">置ける場所 表示: ON</button>
+      <button class="btn" id="restartBtn">最初から</button>
+      <button class="btn sub" id="hintBtn">置ける場所: ON</button>
     </div>
   </div>
 
   <div class="note">
-    最小試作版です。<br>
-    ペア効果は「もう1回打てる」だけにしてあります。
+    対人1台用の試作です。<br>
+    表示されるのは「最後に置いた1マス」だけです。
   </div>
 </div>
 
 <div class="overlay hidden" id="resultOverlay">
   <div class="card">
-    <div class="resultTitle" id="resultTitle">勝敗</div>
+    <div class="resultTitle" id="resultTitle">結果</div>
     <p class="resultSub" id="resultSub">おつかれさまでした。</p>
 
     <div class="resultScores">
@@ -374,7 +351,7 @@ button{
     </div>
 
     <div class="controls">
-      <button class="ctrlBtn" id="playAgainBtn">もう一度</button>
+      <button class="btn" id="playAgainBtn">もう一度</button>
     </div>
   </div>
 </div>
@@ -388,18 +365,16 @@ button{
   const BLACK = 1;
   const WHITE = -1;
 
-  const SYMBOLS = ["★","◆","●","▲","■","♥","☘","☀","☾","♠","♣","✦"];
-  const LIE_COUNT = 4; // ウソマス数
-  const SYMBOL_SHOW_MS = 800;
+  const SYMBOLS = ["★","◆","●","▲","■","♥","☘","☀","☾","♠","♣","✦","✿","⬢","⬣","✚","☯","❖"];
 
   const boardEl = document.getElementById("board");
   const blackCountEl = document.getElementById("blackCount");
   const whiteCountEl = document.getElementById("whiteCount");
-  const turnStoneEl = document.getElementById("turnStone");
+  const turnDotEl = document.getElementById("turnDot");
   const turnLabelEl = document.getElementById("turnLabel");
   const messageEl = document.getElementById("message");
   const restartBtn = document.getElementById("restartBtn");
-  const toggleHintBtn = document.getElementById("toggleHintBtn");
+  const hintBtn = document.getElementById("hintBtn");
 
   const resultOverlay = document.getElementById("resultOverlay");
   const resultTitle = document.getElementById("resultTitle");
@@ -409,37 +384,24 @@ button{
   const playAgainBtn = document.getElementById("playAgainBtn");
 
   let board = [];
-  let hiddenSymbols = [];
-  let shownSymbols = [];
-  let lieMap = [];
+  let marks = [];
   let turn = BLACK;
   let gameOver = false;
   let showHints = true;
 
-  // 直近で本当に見たマークを記録する
-  const lastSeenSymbolByPlayer = {
-    [BLACK]: null,
-    [WHITE]: null
-  };
-
-  // 連続手番フラグ
-  const bonusTurn = {
-    [BLACK]: false,
-    [WHITE]: false
-  };
+  // 最後に置いた石の情報
+  // owner: その石を置いたプレイヤー
+  // x,y: 位置
+  // symbol: そのマスの記号
+  let visibleLastPlaced = null;
 
   function init() {
     board = Array.from({ length: SIZE }, () => Array(SIZE).fill(EMPTY));
-    shownSymbols = Array.from({ length: SIZE }, () => Array(SIZE).fill(null));
-    lieMap = Array.from({ length: SIZE }, () => Array(SIZE).fill(false));
+    marks = buildMarks();
     turn = BLACK;
     gameOver = false;
-    lastSeenSymbolByPlayer[BLACK] = null;
-    lastSeenSymbolByPlayer[WHITE] = null;
-    bonusTurn[BLACK] = false;
-    bonusTurn[WHITE] = false;
+    visibleLastPlaced = null;
 
-    // 初期石
     const m1 = SIZE / 2 - 1;
     const m2 = SIZE / 2;
     board[m1][m1] = WHITE;
@@ -447,58 +409,29 @@ button{
     board[m2][m1] = BLACK;
     board[m2][m2] = WHITE;
 
-    buildHiddenSymbols();
-    placeLieCells();
-    renderBoard();
-    updateInfo("黒の番です。置くとマークが一瞬見えます。");
-    updateCounts();
-    updateTurnUI();
+    updateMessage("黒の番です。");
     hideResult();
+    render();
   }
 
-  function buildHiddenSymbols() {
+  function buildMarks() {
     const total = SIZE * SIZE;
-    const pairCount = total / 2;
-    const picks = [];
+    const pool = [];
 
-    for (let i = 0; i < pairCount; i++) {
-      const symbol = SYMBOLS[i % SYMBOLS.length];
-      picks.push(symbol, symbol);
+    for (let i = 0; i < total; i++) {
+      pool.push(SYMBOLS[i % SYMBOLS.length]);
     }
+    shuffle(pool);
 
-    shuffle(picks);
-
-    hiddenSymbols = [];
+    const arr = [];
     for (let y = 0; y < SIZE; y++) {
       const row = [];
       for (let x = 0; x < SIZE; x++) {
-        row.push(picks[y * SIZE + x]);
+        row.push(pool[y * SIZE + x]);
       }
-      hiddenSymbols.push(row);
+      arr.push(row);
     }
-  }
-
-  function placeLieCells() {
-    const positions = [];
-    for (let y = 0; y < SIZE; y++) {
-      for (let x = 0; x < SIZE; x++) {
-        positions.push([x, y]);
-      }
-    }
-    shuffle(positions);
-
-    let placed = 0;
-    for (const [x, y] of positions) {
-      // 初期4マスもウソ対象にしてOKだが、最初は分かりやすさ重視で避ける
-      const isCenter =
-        (x === SIZE/2 - 1 || x === SIZE/2) &&
-        (y === SIZE/2 - 1 || y === SIZE/2);
-
-      if (isCenter) continue;
-      lieMap[y][x] = true;
-      placed++;
-      if (placed >= LIE_COUNT) break;
-    }
+    return arr;
   }
 
   function shuffle(arr) {
@@ -519,7 +452,7 @@ button{
     const dirs = [
       [1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,-1],[1,-1],[-1,1]
     ];
-    const allFlips = [];
+    const result = [];
 
     for (const [dx, dy] of dirs) {
       let cx = x + dx;
@@ -531,12 +464,13 @@ button{
         cx += dx;
         cy += dy;
       }
+
       if (line.length > 0 && inBounds(cx, cy) && board[cy][cx] === player) {
-        allFlips.push(...line);
+        result.push(...line);
       }
     }
 
-    return allFlips;
+    return result;
   }
 
   function getValidMoves(player) {
@@ -545,187 +479,106 @@ button{
       for (let x = 0; x < SIZE; x++) {
         const flips = getFlips(x, y, player);
         if (flips.length > 0) {
-          moves.push({ x, y, flips });
+          moves.push({x, y, flips});
         }
       }
     }
     return moves;
   }
 
-  function createDisplaySymbol(realSymbol) {
-    // ウソ表示用に、別のシンボルを返す
-    const candidates = SYMBOLS.filter(s => s !== realSymbol);
-    return candidates[Math.floor(Math.random() * candidates.length)];
-  }
-
-  function revealSymbol(x, y) {
-    const real = hiddenSymbols[y][x];
-    const display = lieMap[y][x] ? createDisplaySymbol(real) : real;
-    shownSymbols[y][x] = display;
-    return { real, display, isLie: lieMap[y][x] };
-  }
-
   function placeStone(x, y) {
     if (gameOver) return;
 
-    const flips = getFlips(x, y, turn);
+    const player = turn;
+    const flips = getFlips(x, y, player);
     if (flips.length === 0) return;
 
-    board[y][x] = turn;
+    const symbol = marks[y][x];
+
+    // 今 visible な最後の石が「これから打つプレイヤー自身のもの」なら
+    // その同じマークに置けたときボーナス
+    const matched =
+      visibleLastPlaced &&
+      visibleLastPlaced.owner === player &&
+      visibleLastPlaced.symbol === symbol;
+
+    board[y][x] = player;
     for (const [fx, fy] of flips) {
-      board[fy][fx] = turn;
+      board[fy][fx] = player;
     }
+
+    // 新しく visible を更新
+    visibleLastPlaced = {
+      owner: player,
+      x,
+      y,
+      symbol
+    };
+
+    render();
 
     const cell = getCellEl(x, y);
     if (cell) {
-      cell.classList.add("flash");
-      setTimeout(() => cell.classList.remove("flash"), 350);
+      cell.classList.add("flip");
+      setTimeout(() => cell.classList.remove("flip"), 220);
     }
 
-    const reveal = revealSymbol(x, y);
-    renderBoard();
-
-    const prevSeen = lastSeenSymbolByPlayer[turn];
-    const matched = prevSeen !== null && prevSeen === reveal.real;
-    lastSeenSymbolByPlayer[turn] = reveal.real;
-
-    let msg = `${turn === BLACK ? "黒" : "白"}が ${flips.length} 枚ひっくり返しました。`;
-
-    if (reveal.isLie) {
-      msg += ` このマスはウソ表示。見えた「${reveal.display}」は本物ではありません。`;
-    } else {
-      msg += ` マーク「${reveal.display}」が見えました。`;
-    }
+    let msg = `${player === BLACK ? "黒" : "白"}が ${flips.length} 枚ひっくり返しました。`;
+    msg += ` 記号は「${symbol}」。`;
 
     if (matched) {
-      bonusTurn[turn] = true;
-      msg += ` 同じマークがそろったので、もう1回打てます。`;
-    } else {
-      bonusTurn[turn] = false;
-    }
+      msg += ` 同じマークなので、もう一度打てます。`;
+      updateMessage(msg);
+      updateCounts();
 
-    updateInfo(msg);
-    updateCounts();
-
-    setTimeout(() => {
-      hideShownSymbol(x, y);
-      afterMove();
-    }, SYMBOL_SHOW_MS);
-  }
-
-  function hideShownSymbol(x, y) {
-    shownSymbols[y][x] = null;
-    renderBoard();
-  }
-
-  function afterMove() {
-    if (gameOver) return;
-
-    const current = turn;
-    const enemy = -turn;
-
-    if (bonusTurn[current]) {
-      bonusTurn[current] = false;
-      const sameMoves = getValidMoves(current);
-
+      // 連続手番でも、もしもう置けなければ相手へ
+      const sameMoves = getValidMoves(player);
       if (sameMoves.length > 0) {
-        updateTurnUI();
-        renderBoard();
-        updateInfo(`ペア成功。${current === BLACK ? "黒" : "白"}が続けて打てます。`);
+        render();
         return;
       } else {
-        updateInfo(`ペア成功でしたが、置ける場所がありません。手番が移ります。`);
+        msg += ` ただし置ける場所がないため、手番が移ります。`;
       }
     }
 
-    const enemyMoves = getValidMoves(enemy);
-    const currentMoves = getValidMoves(current);
+    // 通常は相手ターンへ
+    turn = -player;
 
-    if (enemyMoves.length > 0) {
-      turn = enemy;
-      updateTurnUI();
-      renderBoard();
-      return;
-    }
+    // 「次の自分の番まで表示」なので
+    // 相手ターンに入るまでは player の lastPlaced を表示しておく
+    // 相手が打った瞬間に上書きされるのでそのままでOK
 
-    if (currentMoves.length > 0) {
-      renderBoard();
-      updateInfo(`${enemy === BLACK ? "黒" : "白"}は置けないためパスです。${current === BLACK ? "黒" : "白"}の番が続きます。`);
+    updateMessage(msg);
+    updateCounts();
+
+    handlePassOrEnd();
+    render();
+  }
+
+  function handlePassOrEnd() {
+    const currentMoves = getValidMoves(turn);
+
+    if (currentMoves.length > 0) return;
+
+    const passedPlayer = turn;
+    const other = -turn;
+    const otherMoves = getValidMoves(other);
+
+    if (otherMoves.length > 0) {
+      updateMessage(`${passedPlayer === BLACK ? "黒" : "白"}は置けないためパスです。${other === BLACK ? "黒" : "白"}の番です。`);
+      turn = other;
       return;
     }
 
     endGame();
   }
 
-  function updateInfo(text) {
-    messageEl.textContent = text;
-  }
-
-  function updateCounts() {
-    let b = 0;
-    let w = 0;
-    for (let y = 0; y < SIZE; y++) {
-      for (let x = 0; x < SIZE; x++) {
-        if (board[y][x] === BLACK) b++;
-        if (board[y][x] === WHITE) w++;
-      }
-    }
-    blackCountEl.textContent = b;
-    whiteCountEl.textContent = w;
-  }
-
-  function updateTurnUI() {
-    turnStoneEl.className = "stoneMini " + (turn === BLACK ? "black" : "white");
-    turnLabelEl.textContent = turn === BLACK ? "黒" : "白";
-  }
-
-  function renderBoard() {
-    boardEl.innerHTML = "";
-    const validMoves = showHints && !gameOver ? getValidMoves(turn) : [];
-
-    for (let y = 0; y < SIZE; y++) {
-      for (let x = 0; x < SIZE; x++) {
-        const btn = document.createElement("button");
-        btn.className = "cell";
-        btn.type = "button";
-        btn.dataset.x = String(x);
-        btn.dataset.y = String(y);
-
-        const valid = validMoves.some(m => m.x === x && m.y === y);
-        if (valid) btn.classList.add("valid");
-
-        const stone = board[y][x];
-        if (stone !== EMPTY) {
-          const stoneEl = document.createElement("div");
-          stoneEl.className = "stone " + (stone === BLACK ? "black" : "white");
-          btn.appendChild(stoneEl);
-        }
-
-        const sym = document.createElement("div");
-        sym.className = "symbol";
-        sym.textContent = shownSymbols[y][x] || "";
-        if (shownSymbols[y][x]) btn.classList.add("show-symbol");
-        btn.appendChild(sym);
-
-        btn.addEventListener("click", () => {
-          if (!gameOver) placeStone(x, y);
-        });
-
-        boardEl.appendChild(btn);
-      }
-    }
-  }
-
-  function getCellEl(x, y) {
-    return boardEl.querySelector(`.cell[data-x="${x}"][data-y="${y}"]`);
-  }
-
   function endGame() {
     gameOver = true;
     updateCounts();
 
-    const black = Number(blackCountEl.textContent);
-    const white = Number(whiteCountEl.textContent);
+    const black = countStone(BLACK);
+    const white = countStone(WHITE);
 
     finalBlack.textContent = black;
     finalWhite.textContent = white;
@@ -742,21 +595,91 @@ button{
     }
 
     resultOverlay.classList.remove("hidden");
-    renderBoard();
-    updateInfo("ゲーム終了です。");
+    updateMessage("ゲーム終了です。");
   }
 
   function hideResult() {
     resultOverlay.classList.add("hidden");
   }
 
+  function countStone(player) {
+    let n = 0;
+    for (let y = 0; y < SIZE; y++) {
+      for (let x = 0; x < SIZE; x++) {
+        if (board[y][x] === player) n++;
+      }
+    }
+    return n;
+  }
+
+  function updateCounts() {
+    blackCountEl.textContent = countStone(BLACK);
+    whiteCountEl.textContent = countStone(WHITE);
+  }
+
+  function updateTurnUI() {
+    turnDotEl.className = "dot " + (turn === BLACK ? "black" : "white");
+    turnLabelEl.textContent = turn === BLACK ? "黒" : "白";
+  }
+
+  function updateMessage(text) {
+    messageEl.textContent = text;
+  }
+
+  function render() {
+    boardEl.innerHTML = "";
+    const validMoves = !gameOver && showHints ? getValidMoves(turn) : [];
+    updateCounts();
+    updateTurnUI();
+
+    for (let y = 0; y < SIZE; y++) {
+      for (let x = 0; x < SIZE; x++) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "cell";
+        btn.dataset.x = String(x);
+        btn.dataset.y = String(y);
+
+        const isValid = validMoves.some(m => m.x === x && m.y === y);
+        if (isValid) btn.classList.add("valid");
+
+        const stone = board[y][x];
+        if (stone !== EMPTY) {
+          const stoneEl = document.createElement("div");
+          stoneEl.className = "stone " + (stone === BLACK ? "black" : "white");
+          btn.appendChild(stoneEl);
+        }
+
+        const isVisible =
+          visibleLastPlaced &&
+          visibleLastPlaced.x === x &&
+          visibleLastPlaced.y === y;
+
+        if (isVisible) {
+          btn.classList.add("lastMark");
+          const markEl = document.createElement("div");
+          markEl.className = "mark";
+          markEl.textContent = visibleLastPlaced.symbol;
+          btn.appendChild(markEl);
+        }
+
+        btn.addEventListener("click", () => placeStone(x, y));
+        boardEl.appendChild(btn);
+      }
+    }
+  }
+
+  function getCellEl(x, y) {
+    return boardEl.querySelector(`.cell[data-x="${x}"][data-y="${y}"]`);
+  }
+
   restartBtn.addEventListener("click", init);
   playAgainBtn.addEventListener("click", init);
 
-  toggleHintBtn.addEventListener("click", () => {
+  hintBtn.addEventListener("click", () => {
     showHints = !showHints;
-    toggleHintBtn.textContent = `置ける場所 表示: ${showHints ? "ON" : "OFF"}`;
-    renderBoard();
+    hintBtn.textContent = `置ける場所: ${showHints ? "ON" : "OFF"}`;
+    render();
   });
 
   init();
