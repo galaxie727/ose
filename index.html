@@ -269,8 +269,8 @@ button{font:inherit}
 <div class="app">
   <div class="title">デカブサ記号盤</div>
   <p class="sub">
-    はさんで取る基本ルールに、記号の連続手番を足した試作版。<br>
-    置いたコマの周囲だけ情報が見える。CPUあり。
+    はさんで取る基本ルールに、周囲の同記号ボーナスを足した試作版。<br>
+    置いたマスの周囲8マスに同じ記号が2個以上あれば、もう一度打てる。
   </p>
 
   <div class="panel">
@@ -307,7 +307,7 @@ button{font:inherit}
         <div class="tags">
           <div class="tag">6×6</div>
           <div class="tag">記号は2個ずつ</div>
-          <div class="tag">同じ記号で連続手番</div>
+          <div class="tag">周囲2個一致で連続手番</div>
           <div class="tag">周囲8マスだけ表示</div>
           <div class="tag">CPUあり</div>
         </div>
@@ -322,7 +322,7 @@ button{font:inherit}
 
   <div class="note">
     CPUは簡易版です。<br>
-    同じ記号で連続手番を狙い、なければ多く取れる手を優先します。
+    周囲2個一致ボーナスを優先し、なければ角、次に多く取れる手を選びます。
   </div>
 </div>
 
@@ -379,14 +379,6 @@ button{font:inherit}
   let gameOver = false;
   let showHints = true;
   let thinking = false;
-
-  // 直前に各プレイヤーが置いた記号
-  const lastPlacedSymbol = {
-    [P1]: null,
-    [P2]: null
-  };
-
-  // 最後に置いた位置（見た目の強調用）
   let lastPlacedPos = null;
 
   function init() {
@@ -395,8 +387,6 @@ button{font:inherit}
     turn = P1;
     gameOver = false;
     thinking = false;
-    lastPlacedSymbol[P1] = null;
-    lastPlacedSymbol[P2] = null;
     lastPlacedPos = null;
 
     const m1 = SIZE / 2 - 1;
@@ -445,6 +435,19 @@ button{font:inherit}
     return x >= 0 && y >= 0 && x < SIZE && y < SIZE;
   }
 
+  function getNeighbors(x, y) {
+    const out = [];
+    for (let dy = -1; dy <= 1; dy++) {
+      for (let dx = -1; dx <= 1; dx++) {
+        if (dx === 0 && dy === 0) continue;
+        const nx = x + dx;
+        const ny = y + dy;
+        if (inBounds(nx, ny)) out.push([nx, ny]);
+      }
+    }
+    return out;
+  }
+
   function getFlips(x, y, player) {
     if (!inBounds(x, y) || board[y][x] !== EMPTY) return [];
 
@@ -469,12 +472,35 @@ button{font:inherit}
     return result;
   }
 
+  function countSameSymbolNearby(x, y) {
+    const symbol = marks[y][x];
+    const neighbors = getNeighbors(x, y);
+    let count = 0;
+
+    for (const [nx, ny] of neighbors) {
+      if (marks[ny][nx] === symbol) count++;
+    }
+    return count;
+  }
+
+  function hasBonusAt(x, y) {
+    return countSameSymbolNearby(x, y) >= 2;
+  }
+
   function getValidMoves(player) {
     const moves = [];
     for (let y = 0; y < SIZE; y++) {
       for (let x = 0; x < SIZE; x++) {
         const flips = getFlips(x, y, player);
-        if (flips.length > 0) moves.push({ x, y, flips });
+        if (flips.length > 0) {
+          moves.push({
+            x,
+            y,
+            flips,
+            sameCount: countSameSymbolNearby(x, y),
+            bonus: hasBonusAt(x, y)
+          });
+        }
       }
     }
     return moves;
@@ -505,7 +531,6 @@ button{font:inherit}
   }
 
   function isRevealedByPlacedStone(tx, ty) {
-    // 置いてあるコマすべての周囲8マスだけ表示
     for (let y = 0; y < SIZE; y++) {
       for (let x = 0; x < SIZE; x++) {
         if (board[y][x] !== EMPTY) {
@@ -530,27 +555,24 @@ button{font:inherit}
     const flips = getFlips(x, y, player);
     if (flips.length === 0) return;
 
-    const symbol = marks[y][x];
-    const matched = lastPlacedSymbol[player] !== null && lastPlacedSymbol[player] === symbol;
-
     board[y][x] = player;
     for (const [fx, fy] of flips) board[fy][fx] = player;
 
-    lastPlacedSymbol[player] = symbol;
+    const symbol = marks[y][x];
+    const sameCount = countSameSymbolNearby(x, y);
+    const bonus = sameCount >= 2;
     lastPlacedPos = { x, y };
 
     let msg = `${player === P1 ? "あなた" : "CPU"}が ${flips.length} 枚ひっくり返しました。 記号は「${symbol}」。`;
 
-    if (matched) {
-      msg += ` 同じ記号なので、もう一度打てます。`;
+    if (bonus) {
+      msg += ` 周囲に同じ記号が ${sameCount} 個あるので、もう一度打てます。`;
       updateMessage(msg);
       render();
 
       const sameMoves = getValidMoves(player);
       if (sameMoves.length > 0) {
-        if (player === P2) {
-          maybeStartCpuTurn(450);
-        }
+        if (player === P2) maybeStartCpuTurn(450);
         return;
       } else {
         msg += ` ただし置ける場所がないため、手番が移ります。`;
@@ -586,19 +608,15 @@ button{font:inherit}
     const moves = getValidMoves(P2);
     if (moves.length === 0) return null;
 
-    const needSymbol = lastPlacedSymbol[P2];
-
-    // 1. 同じ記号で連続手番を最優先
-    const matchedMoves = needSymbol
-      ? moves.filter(m => marks[m.y][m.x] === needSymbol)
-      : [];
-
-    if (matchedMoves.length > 0) {
-      matchedMoves.sort((a, b) => b.flips.length - a.flips.length);
-      return matchedMoves[0];
+    const bonusMoves = moves.filter(m => m.bonus);
+    if (bonusMoves.length > 0) {
+      bonusMoves.sort((a, b) => {
+        if (b.sameCount !== a.sameCount) return b.sameCount - a.sameCount;
+        return b.flips.length - a.flips.length;
+      });
+      return bonusMoves[0];
     }
 
-    // 2. 角優先
     const corners = moves.filter(m =>
       (m.x === 0 || m.x === SIZE - 1) &&
       (m.y === 0 || m.y === SIZE - 1)
@@ -608,8 +626,10 @@ button{font:inherit}
       return corners[0];
     }
 
-    // 3. 多く取れる手
-    moves.sort((a, b) => b.flips.length - a.flips.length);
+    moves.sort((a, b) => {
+      if (b.sameCount !== a.sameCount) return b.sameCount - a.sameCount;
+      return b.flips.length - a.flips.length;
+    });
     return moves[0];
   }
 
@@ -696,7 +716,6 @@ button{font:inherit}
           cell.appendChild(tile);
         }
 
-        // 周囲8マスだけ表示。置いてあるマス自身は表示しない。
         if (board[y][x] === EMPTY && isRevealedByPlacedStone(x, y)) {
           const mark = document.createElement("div");
           mark.className = "mark";
