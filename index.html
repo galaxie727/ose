@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>チー娘ゴールドバトル</title>
+<title>チー娘ゴールドバトル 完全版</title>
 <style>
 *{box-sizing:border-box}
 html,body{
   margin:0;
   background:
-    radial-gradient(circle at top, #25221a 0%, #0f0f10 45%, #060606 100%);
+    radial-gradient(circle at top, #26221b 0%, #111113 42%, #060606 100%);
   color:#f4f0e6;
   font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;
 }
@@ -21,9 +21,9 @@ body{
 button{font:inherit}
 .app{
   width:100%;
-  max-width:560px;
+  max-width:580px;
   min-height:100svh;
-  padding:14px 14px calc(24px + env(safe-area-inset-bottom));
+  padding:14px 14px calc(28px + env(safe-area-inset-bottom));
 }
 .title{
   text-align:center;
@@ -31,23 +31,23 @@ button{font:inherit}
   font-weight:900;
   letter-spacing:.08em;
   margin:10px 0 4px;
-  color:#fff5d2;
-  text-shadow:0 2px 10px rgba(255,220,120,.08);
+  color:#fff2c6;
+  text-shadow:0 2px 12px rgba(255,225,120,.08);
 }
 .sub{
   text-align:center;
-  color:rgba(255,245,210,.76);
+  color:rgba(255,244,210,.76);
   font-size:13px;
   line-height:1.55;
   margin:0 0 14px;
 }
 .panel{
-  background:rgba(24,24,24,.8);
+  background:rgba(19,19,19,.78);
   border:1px solid rgba(255,230,170,.12);
   border-radius:22px;
   padding:12px;
   box-shadow:
-    0 20px 40px rgba(0,0,0,.42),
+    0 20px 42px rgba(0,0,0,.42),
     inset 0 1px 0 rgba(255,255,255,.03);
   backdrop-filter:blur(4px);
 }
@@ -67,7 +67,7 @@ button{font:inherit}
 .scoreBox.right{text-align:right}
 .cap{
   font-size:12px;
-  color:rgba(255,241,203,.62);
+  color:rgba(255,242,205,.62);
   margin-bottom:4px;
 }
 .big{
@@ -80,7 +80,7 @@ button{font:inherit}
 }
 .turnText{
   font-size:12px;
-  color:rgba(255,241,203,.62);
+  color:rgba(255,242,205,.62);
 }
 .turnMain{
   margin-top:4px;
@@ -97,13 +97,13 @@ button{font:inherit}
   border:1px solid rgba(255,255,255,.18);
 }
 .goldBadge{
-  background:linear-gradient(180deg,#ffefad,#b98b27);
+  background:linear-gradient(180deg,#fff2b9,#ba8a28);
 }
 .silverBadge{
-  background:linear-gradient(180deg,#f2f2f2,#8f959d);
+  background:linear-gradient(180deg,#f7f7f7,#8d949d);
 }
 
-.stockRow{
+.phaseBar{
   display:flex;
   justify-content:center;
   gap:10px;
@@ -111,7 +111,7 @@ button{font:inherit}
   flex-wrap:wrap;
 }
 .stock{
-  min-width:110px;
+  min-width:112px;
   padding:10px 12px;
   border-radius:14px;
   background:rgba(255,255,255,.04);
@@ -122,12 +122,12 @@ button{font:inherit}
   font-size:24px;
   font-weight:900;
   line-height:1;
-  color:#fff0b9;
+  color:#fff0b7;
 }
 .stockLabel{
   margin-top:4px;
   font-size:12px;
-  color:rgba(255,241,203,.66);
+  color:rgba(255,242,205,.66);
 }
 
 .board{
@@ -136,24 +136,28 @@ button{font:inherit}
   display:grid;
   grid-template-columns:repeat(6,1fr);
   grid-template-rows:repeat(6,1fr);
-  gap:6px;
+  gap:8px;
 }
 .cell{
   position:relative;
   border:none;
-  border-radius:14px;
+  border-radius:16px;
   background:
-    linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,0)),
-    #231f1a;
+    radial-gradient(circle at 28% 26%, rgba(255,255,255,.05), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0)),
+    #242019;
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.03),
-    0 4px 10px rgba(0,0,0,.24);
+    0 6px 12px rgba(0,0,0,.24);
   overflow:hidden;
   cursor:pointer;
 }
 .cell:disabled{cursor:default}
+.cell.emptyPlaceable{
+  outline:2px solid rgba(255,240,195,.14);
+}
 .cell.valid{
-  outline:2px solid rgba(255,241,203,.24);
+  outline:2px solid rgba(255,240,195,.22);
 }
 .cell.valid::after{
   content:"";
@@ -166,54 +170,59 @@ button{font:inherit}
   transform:translate(-50%,-50%);
   background:rgba(255,241,203,.42);
 }
-.cell.score3{
+.cell.score1{
   background:
-    linear-gradient(180deg, rgba(255,230,170,.06), rgba(255,255,255,0)),
-    #32291b;
+    radial-gradient(circle at 28% 26%, rgba(255,255,255,.04), transparent 55%),
+    #242019;
 }
 .cell.score2{
   background:
-    linear-gradient(180deg, rgba(255,230,170,.04), rgba(255,255,255,0)),
-    #29231b;
+    radial-gradient(circle at 28% 26%, rgba(255,235,170,.05), transparent 55%),
+    #2b2419;
+}
+.cell.score3{
+  background:
+    radial-gradient(circle at 28% 26%, rgba(255,220,140,.08), transparent 55%),
+    #332919;
 }
 .tile{
   position:absolute;
-  inset:10%;
-  border-radius:10px;
+  inset:18%;
+  border-radius:11px;
   border:1px solid rgba(255,255,255,.14);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.16),
-    inset 0 -6px 12px rgba(0,0,0,.18),
-    0 6px 12px rgba(0,0,0,.26);
+    0 7px 14px rgba(0,0,0,.34),
+    inset 0 1px 0 rgba(255,255,255,.18),
+    inset 0 -8px 12px rgba(0,0,0,.18);
+  transform:translateY(-1px);
 }
 .tile.gold{
-  background:
-    linear-gradient(180deg,#fff2b9 0%,#ddb14d 40%,#a66e13 100%);
+  background:linear-gradient(180deg,#fff3be 0%, #ddb150 42%, #a66f14 100%);
 }
 .tile.silver{
-  background:
-    linear-gradient(180deg,#f8f8f8 0%,#c7ccd1 45%,#7f8790 100%);
+  background:linear-gradient(180deg,#fbfbfb 0%, #c8cdd2 45%, #7f8790 100%);
 }
 .tile.last{
+  transform:translateY(-3px);
   box-shadow:
-    inset 0 0 0 2px rgba(255,255,255,.4),
+    inset 0 0 0 2px rgba(255,255,255,.42),
     0 0 0 2px rgba(255,241,203,.12),
-    0 6px 12px rgba(0,0,0,.26);
+    0 8px 16px rgba(0,0,0,.34);
 }
 .point{
   position:absolute;
-  top:5px;
-  left:7px;
+  top:6px;
+  left:8px;
   font-size:13px;
   font-weight:900;
   color:#ffe9a6;
-  text-shadow:0 1px 2px rgba(0,0,0,.4);
+  text-shadow:0 1px 2px rgba(0,0,0,.42);
   pointer-events:none;
+  z-index:2;
 }
 .point.onTile{
   color:#fff7dd;
 }
-
 .info{
   margin-top:12px;
   display:grid;
@@ -316,8 +325,8 @@ button{font:inherit}
 <div class="app">
   <div class="title">チー娘ゴールドバトル</div>
   <p class="sub">
-    高得点マスだけ先に配置してから対戦。<br>
-    取った点はその場で確定し、あとから奪い返されても失いません。
+    高得点マスを交互に配置してから対戦。<br>
+    コマの下にマス目が見える高級盤面版。
   </p>
 
   <div class="panel">
@@ -341,7 +350,7 @@ button{font:inherit}
       </div>
     </div>
 
-    <div class="stockRow" id="stockRow">
+    <div class="phaseBar" id="stockRow">
       <div class="stock">
         <div class="stockNum" id="stock3">2</div>
         <div class="stockLabel">3点 残り</div>
@@ -357,15 +366,15 @@ button{font:inherit}
     <div class="info">
       <div class="box">
         <div class="cap">現在の状態</div>
-        <div class="msg" id="message">3点を置いてください。残り2枚です。</div>
+        <div class="msg" id="message">あなたの3点配置です。残り2枚。</div>
       </div>
 
       <div class="box">
         <div class="cap">ルール要点</div>
         <div class="tags">
-          <div class="tag">先に3点2枚・2点4枚配置</div>
+          <div class="tag">全面を使って交互配置</div>
+          <div class="tag">3点2枚→2点4枚</div>
           <div class="tag">残りは自動で1点</div>
-          <div class="tag">対戦は6×6</div>
           <div class="tag">点は取得時に確定</div>
           <div class="tag">金 vs 銀</div>
         </div>
@@ -379,8 +388,8 @@ button{font:inherit}
   </div>
 
   <div class="note">
-    配置フェーズでは、あなたが高得点マスを置く。<br>
-    チー娘Aは自動で配置します。
+    配置フェーズは、あなたとチー娘Aが交互に高得点を置きます。<br>
+    対戦フェーズでは、取った瞬間にその点が確定します。
   </div>
 </div>
 
@@ -448,9 +457,10 @@ button{font:inherit}
   let p1Score = 0;
   let p2Score = 0;
 
-  // プレイヤー配置残数
   let playerPlace3 = 2;
   let playerPlace2 = 4;
+  let cpuPlace3 = 2;
+  let cpuPlace2 = 4;
 
   function init() {
     board = Array.from({ length: SIZE }, () => Array(SIZE).fill(EMPTY));
@@ -468,6 +478,8 @@ button{font:inherit}
 
     playerPlace3 = 2;
     playerPlace2 = 4;
+    cpuPlace3 = 2;
+    cpuPlace2 = 4;
 
     hideResult();
     updatePlacementMessage();
@@ -475,12 +487,18 @@ button{font:inherit}
   }
 
   function updatePlacementMessage() {
-    if (playerPlace3 > 0) {
-      updateMessage(`3点を置いてください。残り${playerPlace3}枚です。`);
-    } else if (playerPlace2 > 0) {
-      updateMessage(`2点を置いてください。残り${playerPlace2}枚です。`);
+    if (turn === P1) {
+      if (playerPlace3 > 0) {
+        updateMessage(`あなたの3点配置です。残り${playerPlace3}枚。`);
+      } else if (playerPlace2 > 0) {
+        updateMessage(`あなたの2点配置です。残り${playerPlace2}枚。`);
+      }
     } else {
-      updateMessage("チー娘Aが配置しています…");
+      if (cpuPlace3 > 0) {
+        updateMessage(`チー娘Aが3点を配置しています… 残り${cpuPlace3}枚。`);
+      } else if (cpuPlace2 > 0) {
+        updateMessage(`チー娘Aが2点を配置しています… 残り${cpuPlace2}枚。`);
+      }
     }
   }
 
@@ -502,67 +520,98 @@ button{font:inherit}
     return cells;
   }
 
-  function handlePlaceClick(x, y) {
-    if (thinking || points[y][x] !== 0) return;
-
-    let value = 0;
-    if (playerPlace3 > 0) {
-      value = 3;
-      playerPlace3--;
-    } else if (playerPlace2 > 0) {
-      value = 2;
-      playerPlace2--;
+  function currentPlayerPlaceValue() {
+    if (turn === P1) {
+      if (playerPlace3 > 0) return 3;
+      if (playerPlace2 > 0) return 2;
+      return 0;
     } else {
+      if (cpuPlace3 > 0) return 3;
+      if (cpuPlace2 > 0) return 2;
+      return 0;
+    }
+  }
+
+  function handlePlaceClick(x, y) {
+    if (phase !== PHASE_PLACE || thinking || turn !== P1) return;
+    if (points[y][x] !== 0) return;
+
+    const value = currentPlayerPlaceValue();
+    if (!value) return;
+
+    points[y][x] = value;
+    if (value === 3) playerPlace3--;
+    else playerPlace2--;
+
+    turn = P2;
+    updatePlacementMessage();
+    render();
+    maybeStartCpuPlacement();
+  }
+
+  function maybeStartCpuPlacement(delay = 450) {
+    if (phase !== PHASE_PLACE || turn !== P2 || thinking) return;
+
+    if (cpuPlace3 === 0 && cpuPlace2 === 0) {
+      finishPlacementIfReady();
       return;
     }
 
-    points[y][x] = value;
+    thinking = true;
+    updatePlacementMessage();
     render();
 
-    if (playerPlace3 === 0 && playerPlace2 === 0) {
-      updatePlacementMessage();
-      startCpuPlacement();
-    } else {
-      updatePlacementMessage();
-      render();
-    }
-  }
-
-  function startCpuPlacement() {
-    thinking = true;
-
     setTimeout(() => {
-      cpuPlaceHighScores();
-      fillRemainingOnes();
-      startBattle();
-    }, 500);
+      thinking = false;
+      const value = currentPlayerPlaceValue();
+      const spot = cpuChoosePlacementSpot(value);
+      if (spot) {
+        points[spot.y][spot.x] = value;
+        if (value === 3) cpuPlace3--;
+        else cpuPlace2--;
+      }
+
+      turn = P1;
+      finishPlacementIfReady();
+      if (phase === PHASE_PLACE) {
+        updatePlacementMessage();
+        render();
+      }
+    }, delay);
   }
 
-  function cpuPlaceHighScores() {
-    // チー娘Aは中央寄りを好む簡易配置
-    placeCpuValue(3, 2);
-    placeCpuValue(2, 4);
+  function cpuChoosePlacementSpot(value) {
+    const empty = getEmptyPointCells();
+    if (!empty.length) return null;
+
+    empty.sort((a, b) => {
+      const ae = placementEval(a.x, a.y, value);
+      const be = placementEval(b.x, b.y, value);
+      if (be !== ae) return be - ae;
+      return Math.random() - 0.5;
+    });
+
+    return empty[0];
   }
 
-  function placeCpuValue(value, count) {
-    for (let i = 0; i < count; i++) {
-      const empty = getEmptyPointCells();
-      empty.sort((a, b) => {
-        const da = centerDistance(a.x, a.y);
-        const db = centerDistance(b.x, b.y);
-        if (da !== db) return da - db;
-        return Math.random() - 0.5;
-      });
-
-      const pick = empty[0];
-      if (pick) points[pick.y][pick.x] = value;
-    }
-  }
-
-  function centerDistance(x, y) {
+  function placementEval(x, y, value) {
+    // チー娘Aは中央寄り + 角も少し好む
     const cx = (SIZE - 1) / 2;
     const cy = (SIZE - 1) / 2;
-    return Math.abs(x - cx) + Math.abs(y - cy);
+    const dist = Math.abs(x - cx) + Math.abs(y - cy);
+    let score = 10 - dist;
+
+    if (isCorner(x, y)) score += 2;
+    if (value === 3) score += 2;
+
+    return score;
+  }
+
+  function finishPlacementIfReady() {
+    if (playerPlace3 === 0 && playerPlace2 === 0 && cpuPlace3 === 0 && cpuPlace2 === 0) {
+      fillRemainingOnes();
+      startBattle();
+    }
   }
 
   function fillRemainingOnes() {
@@ -581,13 +630,11 @@ button{font:inherit}
 
     const m1 = SIZE / 2 - 1;
     const m2 = SIZE / 2;
-
     board[m1][m1] = P2;
     board[m1][m2] = P1;
     board[m2][m1] = P1;
     board[m2][m2] = P2;
 
-    // 初期4マスはまだ無得点にする
     updateMessage("対戦開始。あなたの番です。");
     render();
   }
@@ -650,9 +697,16 @@ button{font:inherit}
 
     lastPlacedPos = { x, y };
 
-    const gained = points[y][x];
+    let gained = 0;
+    if (points[y][x] > 0) gained += points[y][x];
+    for (const [fx, fy] of flips) {
+      if (claimed[fy][fx] && board[fy][fx] === player) {
+        // already counted in gainPoint when first claimed; no extra
+      }
+    }
+
     let msg = `${player === P1 ? "あなた" : "チー娘A"}が ${flips.length} 枚ひっくり返しました。`;
-    msg += ` このマスで ${gained} 点獲得。`;
+    msg += ` この着地マスは ${points[y][x]} 点です。`;
 
     turn = -player;
     updateMessage(msg);
@@ -681,30 +735,21 @@ button{font:inherit}
   function simulateMoveGain(move, player) {
     let gain = 0;
     if (!claimed[move.y][move.x]) gain += points[move.y][move.x];
-
     for (const [fx, fy] of move.flips) {
       if (!claimed[fy][fx]) gain += points[fy][fx];
     }
-
-    // 角を少し評価
     if (isCorner(move.x, move.y)) gain += 2;
-
     return gain;
   }
 
   function cpuChooseMove() {
     const moves = getValidMoves(P2);
-    if (moves.length === 0) return null;
+    if (!moves.length) return null;
 
     moves.sort((a, b) => {
       const aGain = simulateMoveGain(a, P2);
       const bGain = simulateMoveGain(b, P2);
       if (bGain !== aGain) return bGain - aGain;
-
-      if (isCorner(b.x, b.y) !== isCorner(a.x, a.y)) {
-        return (isCorner(b.x, b.y) ? 1 : 0) - (isCorner(a.x, a.y) ? 1 : 0);
-      }
-
       return b.flips.length - a.flips.length;
     });
 
@@ -712,7 +757,7 @@ button{font:inherit}
   }
 
   function maybeStartCpuTurn(delay = 650) {
-    if (phase !== PHASE_BATTLE || gameIsOver() || turn !== P2 || thinking) return;
+    if (phase !== PHASE_BATTLE || turn !== P2 || thinking) return;
 
     thinking = true;
     updateMessage("チー娘Aが考えています…");
@@ -736,10 +781,6 @@ button{font:inherit}
 
       doMove(move.x, move.y);
     }, delay);
-  }
-
-  function gameIsOver() {
-    return getValidMoves(P1).length === 0 && getValidMoves(P2).length === 0;
   }
 
   function endGame() {
@@ -773,11 +814,11 @@ button{font:inherit}
 
     if (phase === PHASE_PLACE) {
       phaseLabelEl.textContent = "配置フェーズ";
-      turnLabelEl.textContent = "あなた";
-      turnBadgeEl.className = "badge goldBadge";
+      turnLabelEl.textContent = turn === P1 ? "あなた" : "チー娘A";
+      turnBadgeEl.className = "badge " + (turn === P1 ? "goldBadge" : "silverBadge");
       stockRowEl.classList.remove("hidden");
-      stock3El.textContent = playerPlace3;
-      stock2El.textContent = playerPlace2;
+      stock3El.textContent = Math.max(playerPlace3, 0);
+      stock2El.textContent = Math.max(playerPlace2, 0);
     } else {
       phaseLabelEl.textContent = "対戦フェーズ";
       turnLabelEl.textContent = turn === P1 ? "あなた" : "チー娘A";
@@ -793,8 +834,14 @@ button{font:inherit}
         cell.type = "button";
         cell.className = "cell";
 
-        if (points[y][x] === 3) cell.classList.add("score3");
-        else if (points[y][x] === 2) cell.classList.add("score2");
+        const score = points[y][x];
+        if (score === 3) cell.classList.add("score3");
+        else if (score === 2) cell.classList.add("score2");
+        else cell.classList.add("score1");
+
+        if (phase === PHASE_PLACE && turn === P1 && points[y][x] === 0) {
+          cell.classList.add("emptyPlaceable");
+        }
 
         const isValid = validMoves.some(m => m.x === x && m.y === y);
         if (isValid) cell.classList.add("valid");
@@ -819,20 +866,14 @@ button{font:inherit}
         cell.addEventListener("click", () => {
           if (phase === PHASE_PLACE) {
             handlePlaceClick(x, y);
-          } else if (phase === PHASE_BATTLE) {
-            if (!thinking && turn === P1) placeStoneClick(x, y);
+          } else if (phase === PHASE_BATTLE && turn === P1 && !thinking) {
+            doMove(x, y);
           }
         });
 
         boardEl.appendChild(cell);
       }
     }
-  }
-
-  function placeStoneClick(x, y) {
-    if (phase !== PHASE_BATTLE) return;
-    if (thinking || turn !== P1) return;
-    doMove(x, y);
   }
 
   restartBtn.addEventListener("click", init);
