@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>チー娘ゴールドバトル 修正版</title>
+<title>チー娘ゴールドバトル 修正版2</title>
 <style>
 *{box-sizing:border-box}
 html,body{
@@ -131,6 +131,11 @@ button{font:inherit}
   grid-template-columns:repeat(6, 1fr);
   grid-template-rows:repeat(6, 1fr);
   gap:8px;
+  transition:opacity .2s ease, filter .2s ease;
+}
+.board.finished{
+  opacity:.35;
+  filter:blur(1px);
 }
 .cell{
   position:relative;
@@ -321,7 +326,7 @@ button{font:inherit}
   <div class="title">チー娘ゴールドバトル</div>
   <p class="sub">
     高得点マスを交互に配置してから対戦。<br>
-    コマの下にマス目が見える修正版。
+    点を取ったら、そのマスの点数は消えます。
   </p>
 
   <div class="panel">
@@ -371,7 +376,7 @@ button{font:inherit}
           <div class="tag">3点2枚→2点4枚</div>
           <div class="tag">残りは自動で1点</div>
           <div class="tag">点は取得時に確定</div>
-          <div class="tag">金 vs 銀</div>
+          <div class="tag">取得後は点が消える</div>
         </div>
       </div>
     </div>
@@ -384,7 +389,7 @@ button{font:inherit}
 
   <div class="note">
     配置フェーズでは、あなたとチー娘Aが交互に高得点を置きます。<br>
-    置ける場所の切替は対戦フェーズで使う補助です。
+    対戦フェーズでは、取った瞬間に点が確定し、そのマスの点数は消えます。
   </div>
 </div>
 
@@ -440,7 +445,7 @@ button{font:inherit}
   const playAgainBtn = document.getElementById("playAgainBtn");
 
   let board, points, claimed;
-  let turn, phase, showHints, thinking, lastPlacedPos;
+  let turn, phase, showHints, thinking, lastPlacedPos, gameEnded;
   let p1Score, p2Score;
   let playerPlace3, playerPlace2, cpuPlace3, cpuPlace2;
 
@@ -454,6 +459,7 @@ button{font:inherit}
     showHints = true;
     thinking = false;
     lastPlacedPos = null;
+    gameEnded = false;
 
     p1Score = 0;
     p2Score = 0;
@@ -649,14 +655,21 @@ button{font:inherit}
 
   function gainPoint(x, y, player) {
     if (claimed[y][x]) return;
+
     claimed[y][x] = true;
+
     if (player === P1) p1Score += points[y][x];
     else p2Score += points[y][x];
+
+    // 取ったら点を消す
+    points[y][x] = 0;
   }
 
   function doMove(x, y) {
     const flips = getFlips(x, y, turn);
     if (!flips.length) return;
+
+    const landingPoint = points[y][x];
 
     board[y][x] = turn;
     gainPoint(x, y, turn);
@@ -669,10 +682,9 @@ button{font:inherit}
     lastPlacedPos = { x, y };
 
     const who = turn === P1 ? "あなた" : "チー娘A";
-    const landing = points[y][x];
     turn = -turn;
 
-    updateMessage(`${who}が ${flips.length} 枚ひっくり返しました。 この着地マスは ${landing} 点です。`);
+    updateMessage(`${who}が ${flips.length} 枚ひっくり返しました。 この着地マスは ${landingPoint} 点でした。`);
     handlePassOrEnd();
     render();
     maybeStartCpuTurn();
@@ -720,7 +732,7 @@ button{font:inherit}
   }
 
   function maybeStartCpuTurn() {
-    if (phase !== PHASE_BATTLE || turn !== P2 || thinking) return;
+    if (phase !== PHASE_BATTLE || turn !== P2 || thinking || gameEnded) return;
 
     thinking = true;
     updateMessage("チー娘Aが考えています…");
@@ -728,7 +740,7 @@ button{font:inherit}
 
     setTimeout(() => {
       thinking = false;
-      if (phase !== PHASE_BATTLE || turn !== P2) return;
+      if (phase !== PHASE_BATTLE || turn !== P2 || gameEnded) return;
 
       const move = cpuChooseMove();
       if (!move) {
@@ -743,6 +755,8 @@ button{font:inherit}
   }
 
   function endGame() {
+    gameEnded = true;
+
     finalP1.textContent = p1Score;
     finalP2.textContent = p2Score;
 
@@ -759,6 +773,7 @@ button{font:inherit}
 
     resultOverlay.classList.remove("hidden");
     updateMessage("ゲーム終了です。");
+    render();
   }
 
   function hideResult() {
@@ -767,6 +782,7 @@ button{font:inherit}
 
   function render() {
     boardEl.innerHTML = "";
+    boardEl.classList.toggle("finished", gameEnded);
 
     p1ScoreEl.textContent = p1Score;
     p2ScoreEl.textContent = p2Score;
@@ -785,7 +801,9 @@ button{font:inherit}
       stockRowEl.classList.add("hidden");
     }
 
-    const validMoves = (phase === PHASE_BATTLE && showHints && turn === P1) ? getValidMoves(P1) : [];
+    const validMoves = (phase === PHASE_BATTLE && showHints && turn === P1 && !gameEnded)
+      ? getValidMoves(P1)
+      : [];
 
     for (let y = 0; y < SIZE; y++) {
       for (let x = 0; x < SIZE; x++) {
@@ -814,7 +832,7 @@ button{font:inherit}
           cell.appendChild(tile);
         }
 
-        if (points[y][x] > 0) {
+        if (points[y][x] > 0 && !gameEnded) {
           const point = document.createElement("div");
           point.className = "point";
           if (board[y][x] !== EMPTY) point.classList.add("onTile");
@@ -823,6 +841,7 @@ button{font:inherit}
         }
 
         cell.addEventListener("click", () => {
+          if (gameEnded) return;
           if (phase === PHASE_PLACE) handlePlaceClick(x, y);
           else if (phase === PHASE_BATTLE && turn === P1 && !thinking) doMove(x, y);
         });
