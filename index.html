@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>チー娘ゴールドバトル 修正版2</title>
+<title>チー娘ゴールドバトル 配点強化版</title>
 <style>
 *{box-sizing:border-box}
 html,body{
@@ -106,15 +106,15 @@ button{font:inherit}
   flex-wrap:wrap;
 }
 .stock{
-  min-width:112px;
-  padding:10px 12px;
+  min-width:82px;
+  padding:10px 10px;
   border-radius:14px;
   background:rgba(255,255,255,.04);
   border:1px solid rgba(255,230,170,.1);
   text-align:center;
 }
 .stockNum{
-  font-size:24px;
+  font-size:22px;
   font-weight:900;
   line-height:1;
   color:#fff0b7;
@@ -184,6 +184,16 @@ button{font:inherit}
   background:
     radial-gradient(circle at 28% 26%, rgba(255,220,140,.08), transparent 55%),
     #332919;
+}
+.cell.score4{
+  background:
+    radial-gradient(circle at 28% 26%, rgba(255,205,120,.11), transparent 55%),
+    #3a2b18;
+}
+.cell.score5{
+  background:
+    radial-gradient(circle at 28% 26%, rgba(255,195,90,.15), transparent 55%),
+    #433014;
 }
 .tile{
   position:absolute;
@@ -325,7 +335,7 @@ button{font:inherit}
 <div class="app">
   <div class="title">チー娘ゴールドバトル</div>
   <p class="sub">
-    高得点マスを交互に配置してから対戦。<br>
+    5点・4点を追加した配点強化版。<br>
     点を取ったら、そのマスの点数は消えます。
   </p>
 
@@ -352,12 +362,20 @@ button{font:inherit}
 
     <div class="phaseBar" id="stockRow">
       <div class="stock">
+        <div class="stockNum" id="stock5">1</div>
+        <div class="stockLabel">5点</div>
+      </div>
+      <div class="stock">
+        <div class="stockNum" id="stock4">1</div>
+        <div class="stockLabel">4点</div>
+      </div>
+      <div class="stock">
         <div class="stockNum" id="stock3">2</div>
-        <div class="stockLabel">3点 残り</div>
+        <div class="stockLabel">3点</div>
       </div>
       <div class="stock">
         <div class="stockNum" id="stock2">4</div>
-        <div class="stockLabel">2点 残り</div>
+        <div class="stockLabel">2点</div>
       </div>
     </div>
 
@@ -366,16 +384,17 @@ button{font:inherit}
     <div class="info">
       <div class="box">
         <div class="cap">現在の状態</div>
-        <div class="msg" id="message">あなたの3点配置です。残り2枚。</div>
+        <div class="msg" id="message">あなたの5点配置です。残り1枚。</div>
       </div>
 
       <div class="box">
         <div class="cap">ルール要点</div>
         <div class="tags">
-          <div class="tag">全面を使って交互配置</div>
-          <div class="tag">3点2枚→2点4枚</div>
-          <div class="tag">残りは自動で1点</div>
-          <div class="tag">点は取得時に確定</div>
+          <div class="tag">5点×2</div>
+          <div class="tag">4点×2</div>
+          <div class="tag">3点×4</div>
+          <div class="tag">2点×8</div>
+          <div class="tag">残り1点</div>
           <div class="tag">取得後は点が消える</div>
         </div>
       </div>
@@ -388,8 +407,8 @@ button{font:inherit}
   </div>
 
   <div class="note">
-    配置フェーズでは、あなたとチー娘Aが交互に高得点を置きます。<br>
-    対戦フェーズでは、取った瞬間に点が確定し、そのマスの点数は消えます。
+    配置順は 5点 → 4点 → 3点×2 → 2点×4。<br>
+    チー娘Aも同じ数だけ交互に配置します。
   </div>
 </div>
 
@@ -424,6 +443,8 @@ button{font:inherit}
   const PHASE_PLACE = "place";
   const PHASE_BATTLE = "battle";
 
+  const PLACE_ORDER = [5, 4, 3, 3, 2, 2, 2, 2];
+
   const boardEl = document.getElementById("board");
   const p1ScoreEl = document.getElementById("p1Score");
   const p2ScoreEl = document.getElementById("p2Score");
@@ -433,7 +454,10 @@ button{font:inherit}
   const messageEl = document.getElementById("message");
   const restartBtn = document.getElementById("restartBtn");
   const hintBtn = document.getElementById("hintBtn");
+
   const stockRowEl = document.getElementById("stockRow");
+  const stock5El = document.getElementById("stock5");
+  const stock4El = document.getElementById("stock4");
   const stock3El = document.getElementById("stock3");
   const stock2El = document.getElementById("stock2");
 
@@ -447,7 +471,7 @@ button{font:inherit}
   let board, points, claimed;
   let turn, phase, showHints, thinking, lastPlacedPos, gameEnded;
   let p1Score, p2Score;
-  let playerPlace3, playerPlace2, cpuPlace3, cpuPlace2;
+  let playerOrderIndex, cpuOrderIndex;
 
   function resetState() {
     board = Array.from({ length: SIZE }, () => Array(SIZE).fill(EMPTY));
@@ -464,10 +488,8 @@ button{font:inherit}
     p1Score = 0;
     p2Score = 0;
 
-    playerPlace3 = 2;
-    playerPlace2 = 4;
-    cpuPlace3 = 2;
-    cpuPlace2 = 4;
+    playerOrderIndex = 0;
+    cpuOrderIndex = 0;
   }
 
   function init() {
@@ -478,18 +500,42 @@ button{font:inherit}
     render();
   }
 
+  function updateMessage(text) {
+    messageEl.textContent = text;
+  }
+
+  function currentPlaceValue(player) {
+    if (player === P1) return PLACE_ORDER[playerOrderIndex] || 0;
+    return PLACE_ORDER[cpuOrderIndex] || 0;
+  }
+
+  function remainingCount(player, value) {
+    const idx = player === P1 ? playerOrderIndex : cpuOrderIndex;
+    let count = 0;
+    for (let i = idx; i < PLACE_ORDER.length; i++) {
+      if (PLACE_ORDER[i] === value) count++;
+    }
+    return count;
+  }
+
   function updatePlacementMessage() {
+    const value = currentPlaceValue(turn);
+    const count = remainingCount(turn, value);
+
+    if (value === 0) return;
+
     if (turn === P1) {
-      if (playerPlace3 > 0) updateMessage(`あなたの3点配置です。残り${playerPlace3}枚。`);
-      else if (playerPlace2 > 0) updateMessage(`あなたの2点配置です。残り${playerPlace2}枚。`);
+      updateMessage(`あなたの${value}点配置です。残り${count}枚。`);
     } else {
-      if (cpuPlace3 > 0) updateMessage(`チー娘Aが3点を配置しています…`);
-      else if (cpuPlace2 > 0) updateMessage(`チー娘Aが2点を配置しています…`);
+      updateMessage(`チー娘Aが${value}点を配置しています… 残り${count}枚。`);
     }
   }
 
-  function updateMessage(text) {
-    messageEl.textContent = text;
+  function updateStock() {
+    stock5El.textContent = remainingCount(P1, 5);
+    stock4El.textContent = remainingCount(P1, 4);
+    stock3El.textContent = remainingCount(P1, 3);
+    stock2El.textContent = remainingCount(P1, 2);
   }
 
   function inBounds(x, y) {
@@ -510,17 +556,6 @@ button{font:inherit}
     return cells;
   }
 
-  function currentPlaceValue(player) {
-    if (player === P1) {
-      if (playerPlace3 > 0) return 3;
-      if (playerPlace2 > 0) return 2;
-      return 0;
-    }
-    if (cpuPlace3 > 0) return 3;
-    if (cpuPlace2 > 0) return 2;
-    return 0;
-  }
-
   function handlePlaceClick(x, y) {
     if (phase !== PHASE_PLACE || thinking || turn !== P1) return;
     if (points[y][x] !== 0) return;
@@ -529,10 +564,9 @@ button{font:inherit}
     if (!value) return;
 
     points[y][x] = value;
-    if (value === 3) playerPlace3--;
-    else playerPlace2--;
-
+    playerOrderIndex++;
     turn = P2;
+
     render();
     updatePlacementMessage();
     maybeStartCpuPlacement();
@@ -542,8 +576,11 @@ button{font:inherit}
     const cx = (SIZE - 1) / 2;
     const cy = (SIZE - 1) / 2;
     let score = 10 - (Math.abs(x - cx) + Math.abs(y - cy));
+
     if (isCorner(x, y)) score += 2;
-    if (value === 3) score += 2;
+    if (value >= 4) score += 2;
+    if (value === 3) score += 1;
+
     return score;
   }
 
@@ -574,15 +611,14 @@ button{font:inherit}
         const spot = cpuChoosePlacementSpot(value);
         if (spot) {
           points[spot.y][spot.x] = value;
-          if (value === 3) cpuPlace3--;
-          else cpuPlace2--;
+          cpuOrderIndex++;
         }
       }
 
       thinking = false;
       turn = P1;
 
-      if (playerPlace3 === 0 && playerPlace2 === 0 && cpuPlace3 === 0 && cpuPlace2 === 0) {
+      if (playerOrderIndex >= PLACE_ORDER.length && cpuOrderIndex >= PLACE_ORDER.length) {
         fillRemainingOnes();
         startBattle();
         return;
@@ -657,11 +693,9 @@ button{font:inherit}
     if (claimed[y][x]) return;
 
     claimed[y][x] = true;
-
     if (player === P1) p1Score += points[y][x];
     else p2Score += points[y][x];
 
-    // 取ったら点を消す
     points[y][x] = 0;
   }
 
@@ -786,8 +820,7 @@ button{font:inherit}
 
     p1ScoreEl.textContent = p1Score;
     p2ScoreEl.textContent = p2Score;
-    stock3El.textContent = playerPlace3;
-    stock2El.textContent = playerPlace2;
+    updateStock();
 
     if (phase === PHASE_PLACE) {
       phaseLabelEl.textContent = "配置フェーズ";
@@ -812,7 +845,9 @@ button{font:inherit}
         cell.className = "cell";
 
         const score = points[y][x];
-        if (score === 3) cell.classList.add("score3");
+        if (score === 5) cell.classList.add("score5");
+        else if (score === 4) cell.classList.add("score4");
+        else if (score === 3) cell.classList.add("score3");
         else if (score === 2) cell.classList.add("score2");
         else cell.classList.add("score1");
 
