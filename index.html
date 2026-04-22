@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>チー娘ゴールドバトル 完全版</title>
+<title>チー娘ゴールドバトル 修正版</title>
 <style>
 *{box-sizing:border-box}
 html,body{
@@ -32,7 +32,6 @@ button{font:inherit}
   letter-spacing:.08em;
   margin:10px 0 4px;
   color:#fff2c6;
-  text-shadow:0 2px 12px rgba(255,225,120,.08);
 }
 .sub{
   text-align:center;
@@ -46,10 +45,7 @@ button{font:inherit}
   border:1px solid rgba(255,230,170,.12);
   border-radius:22px;
   padding:12px;
-  box-shadow:
-    0 20px 42px rgba(0,0,0,.42),
-    inset 0 1px 0 rgba(255,255,255,.03);
-  backdrop-filter:blur(4px);
+  box-shadow:0 20px 42px rgba(0,0,0,.42);
 }
 .top{
   display:grid;
@@ -102,7 +98,6 @@ button{font:inherit}
 .silverBadge{
   background:linear-gradient(180deg,#f7f7f7,#8d949d);
 }
-
 .phaseBar{
   display:flex;
   justify-content:center;
@@ -129,13 +124,12 @@ button{font:inherit}
   font-size:12px;
   color:rgba(255,242,205,.66);
 }
-
 .board{
   width:100%;
-  aspect-ratio:1/1;
+  aspect-ratio:1 / 1;
   display:grid;
-  grid-template-columns:repeat(6,1fr);
-  grid-template-rows:repeat(6,1fr);
+  grid-template-columns:repeat(6, 1fr);
+  grid-template-rows:repeat(6, 1fr);
   gap:8px;
 }
 .cell{
@@ -151,9 +145,10 @@ button{font:inherit}
     0 6px 12px rgba(0,0,0,.24);
   overflow:hidden;
   cursor:pointer;
+  min-width:0;
+  min-height:0;
 }
-.cell:disabled{cursor:default}
-.cell.emptyPlaceable{
+.cell.placeable{
   outline:2px solid rgba(255,240,195,.14);
 }
 .cell.valid{
@@ -326,7 +321,7 @@ button{font:inherit}
   <div class="title">チー娘ゴールドバトル</div>
   <p class="sub">
     高得点マスを交互に配置してから対戦。<br>
-    コマの下にマス目が見える高級盤面版。
+    コマの下にマス目が見える修正版。
   </p>
 
   <div class="panel">
@@ -388,8 +383,8 @@ button{font:inherit}
   </div>
 
   <div class="note">
-    配置フェーズは、あなたとチー娘Aが交互に高得点を置きます。<br>
-    対戦フェーズでは、取った瞬間にその点が確定します。
+    配置フェーズでは、あなたとチー娘Aが交互に高得点を置きます。<br>
+    置ける場所の切替は対戦フェーズで使う補助です。
   </div>
 </div>
 
@@ -421,7 +416,6 @@ button{font:inherit}
   const EMPTY = 0;
   const P1 = 1;
   const P2 = -1;
-
   const PHASE_PLACE = "place";
   const PHASE_BATTLE = "battle";
 
@@ -445,24 +439,12 @@ button{font:inherit}
   const finalP2 = document.getElementById("finalP2");
   const playAgainBtn = document.getElementById("playAgainBtn");
 
-  let board = [];
-  let points = [];
-  let claimed = [];
-  let turn = P1;
-  let phase = PHASE_PLACE;
-  let showHints = true;
-  let thinking = false;
-  let lastPlacedPos = null;
+  let board, points, claimed;
+  let turn, phase, showHints, thinking, lastPlacedPos;
+  let p1Score, p2Score;
+  let playerPlace3, playerPlace2, cpuPlace3, cpuPlace2;
 
-  let p1Score = 0;
-  let p2Score = 0;
-
-  let playerPlace3 = 2;
-  let playerPlace2 = 4;
-  let cpuPlace3 = 2;
-  let cpuPlace2 = 4;
-
-  function init() {
+  function resetState() {
     board = Array.from({ length: SIZE }, () => Array(SIZE).fill(EMPTY));
     points = Array.from({ length: SIZE }, () => Array(SIZE).fill(0));
     claimed = Array.from({ length: SIZE }, () => Array(SIZE).fill(false));
@@ -480,26 +462,28 @@ button{font:inherit}
     playerPlace2 = 4;
     cpuPlace3 = 2;
     cpuPlace2 = 4;
+  }
 
+  function init() {
+    resetState();
     hideResult();
     updatePlacementMessage();
+    hintBtn.textContent = `置ける場所: ${showHints ? "ON" : "OFF"}`;
     render();
   }
 
   function updatePlacementMessage() {
     if (turn === P1) {
-      if (playerPlace3 > 0) {
-        updateMessage(`あなたの3点配置です。残り${playerPlace3}枚。`);
-      } else if (playerPlace2 > 0) {
-        updateMessage(`あなたの2点配置です。残り${playerPlace2}枚。`);
-      }
+      if (playerPlace3 > 0) updateMessage(`あなたの3点配置です。残り${playerPlace3}枚。`);
+      else if (playerPlace2 > 0) updateMessage(`あなたの2点配置です。残り${playerPlace2}枚。`);
     } else {
-      if (cpuPlace3 > 0) {
-        updateMessage(`チー娘Aが3点を配置しています… 残り${cpuPlace3}枚。`);
-      } else if (cpuPlace2 > 0) {
-        updateMessage(`チー娘Aが2点を配置しています… 残り${cpuPlace2}枚。`);
-      }
+      if (cpuPlace3 > 0) updateMessage(`チー娘Aが3点を配置しています…`);
+      else if (cpuPlace2 > 0) updateMessage(`チー娘Aが2点を配置しています…`);
     }
+  }
+
+  function updateMessage(text) {
+    messageEl.textContent = text;
   }
 
   function inBounds(x, y) {
@@ -520,23 +504,22 @@ button{font:inherit}
     return cells;
   }
 
-  function currentPlayerPlaceValue() {
-    if (turn === P1) {
+  function currentPlaceValue(player) {
+    if (player === P1) {
       if (playerPlace3 > 0) return 3;
       if (playerPlace2 > 0) return 2;
       return 0;
-    } else {
-      if (cpuPlace3 > 0) return 3;
-      if (cpuPlace2 > 0) return 2;
-      return 0;
     }
+    if (cpuPlace3 > 0) return 3;
+    if (cpuPlace2 > 0) return 2;
+    return 0;
   }
 
   function handlePlaceClick(x, y) {
     if (phase !== PHASE_PLACE || thinking || turn !== P1) return;
     if (points[y][x] !== 0) return;
 
-    const value = currentPlayerPlaceValue();
+    const value = currentPlaceValue(P1);
     if (!value) return;
 
     points[y][x] = value;
@@ -544,40 +527,18 @@ button{font:inherit}
     else playerPlace2--;
 
     turn = P2;
-    updatePlacementMessage();
     render();
+    updatePlacementMessage();
     maybeStartCpuPlacement();
   }
 
-  function maybeStartCpuPlacement(delay = 450) {
-    if (phase !== PHASE_PLACE || turn !== P2 || thinking) return;
-
-    if (cpuPlace3 === 0 && cpuPlace2 === 0) {
-      finishPlacementIfReady();
-      return;
-    }
-
-    thinking = true;
-    updatePlacementMessage();
-    render();
-
-    setTimeout(() => {
-      thinking = false;
-      const value = currentPlayerPlaceValue();
-      const spot = cpuChoosePlacementSpot(value);
-      if (spot) {
-        points[spot.y][spot.x] = value;
-        if (value === 3) cpuPlace3--;
-        else cpuPlace2--;
-      }
-
-      turn = P1;
-      finishPlacementIfReady();
-      if (phase === PHASE_PLACE) {
-        updatePlacementMessage();
-        render();
-      }
-    }, delay);
+  function placementEval(x, y, value) {
+    const cx = (SIZE - 1) / 2;
+    const cy = (SIZE - 1) / 2;
+    let score = 10 - (Math.abs(x - cx) + Math.abs(y - cy));
+    if (isCorner(x, y)) score += 2;
+    if (value === 3) score += 2;
+    return score;
   }
 
   function cpuChoosePlacementSpot(value) {
@@ -585,8 +546,8 @@ button{font:inherit}
     if (!empty.length) return null;
 
     empty.sort((a, b) => {
-      const ae = placementEval(a.x, a.y, value);
       const be = placementEval(b.x, b.y, value);
+      const ae = placementEval(a.x, a.y, value);
       if (be !== ae) return be - ae;
       return Math.random() - 0.5;
     });
@@ -594,24 +555,36 @@ button{font:inherit}
     return empty[0];
   }
 
-  function placementEval(x, y, value) {
-    // チー娘Aは中央寄り + 角も少し好む
-    const cx = (SIZE - 1) / 2;
-    const cy = (SIZE - 1) / 2;
-    const dist = Math.abs(x - cx) + Math.abs(y - cy);
-    let score = 10 - dist;
+  function maybeStartCpuPlacement() {
+    if (phase !== PHASE_PLACE || turn !== P2 || thinking) return;
 
-    if (isCorner(x, y)) score += 2;
-    if (value === 3) score += 2;
+    thinking = true;
+    render();
+    updatePlacementMessage();
 
-    return score;
-  }
+    setTimeout(() => {
+      const value = currentPlaceValue(P2);
+      if (value) {
+        const spot = cpuChoosePlacementSpot(value);
+        if (spot) {
+          points[spot.y][spot.x] = value;
+          if (value === 3) cpuPlace3--;
+          else cpuPlace2--;
+        }
+      }
 
-  function finishPlacementIfReady() {
-    if (playerPlace3 === 0 && playerPlace2 === 0 && cpuPlace3 === 0 && cpuPlace2 === 0) {
-      fillRemainingOnes();
-      startBattle();
-    }
+      thinking = false;
+      turn = P1;
+
+      if (playerPlace3 === 0 && playerPlace2 === 0 && cpuPlace3 === 0 && cpuPlace2 === 0) {
+        fillRemainingOnes();
+        startBattle();
+        return;
+      }
+
+      updatePlacementMessage();
+      render();
+    }, 450);
   }
 
   function fillRemainingOnes() {
@@ -624,7 +597,6 @@ button{font:inherit}
 
   function startBattle() {
     phase = PHASE_BATTLE;
-    thinking = false;
     turn = P1;
     lastPlacedPos = null;
 
@@ -683,33 +655,24 @@ button{font:inherit}
   }
 
   function doMove(x, y) {
-    const player = turn;
-    const flips = getFlips(x, y, player);
-    if (flips.length === 0) return;
+    const flips = getFlips(x, y, turn);
+    if (!flips.length) return;
 
-    board[y][x] = player;
-    gainPoint(x, y, player);
+    board[y][x] = turn;
+    gainPoint(x, y, turn);
 
     for (const [fx, fy] of flips) {
-      board[fy][fx] = player;
-      gainPoint(fx, fy, player);
+      board[fy][fx] = turn;
+      gainPoint(fx, fy, turn);
     }
 
     lastPlacedPos = { x, y };
 
-    let gained = 0;
-    if (points[y][x] > 0) gained += points[y][x];
-    for (const [fx, fy] of flips) {
-      if (claimed[fy][fx] && board[fy][fx] === player) {
-        // already counted in gainPoint when first claimed; no extra
-      }
-    }
+    const who = turn === P1 ? "あなた" : "チー娘A";
+    const landing = points[y][x];
+    turn = -turn;
 
-    let msg = `${player === P1 ? "あなた" : "チー娘A"}が ${flips.length} 枚ひっくり返しました。`;
-    msg += ` この着地マスは ${points[y][x]} 点です。`;
-
-    turn = -player;
-    updateMessage(msg);
+    updateMessage(`${who}が ${flips.length} 枚ひっくり返しました。 この着地マスは ${landing} 点です。`);
     handlePassOrEnd();
     render();
     maybeStartCpuTurn();
@@ -747,8 +710,8 @@ button{font:inherit}
     if (!moves.length) return null;
 
     moves.sort((a, b) => {
-      const aGain = simulateMoveGain(a, P2);
       const bGain = simulateMoveGain(b, P2);
+      const aGain = simulateMoveGain(a, P2);
       if (bGain !== aGain) return bGain - aGain;
       return b.flips.length - a.flips.length;
     });
@@ -756,7 +719,7 @@ button{font:inherit}
     return moves[0];
   }
 
-  function maybeStartCpuTurn(delay = 650) {
+  function maybeStartCpuTurn() {
     if (phase !== PHASE_BATTLE || turn !== P2 || thinking) return;
 
     thinking = true;
@@ -764,14 +727,10 @@ button{font:inherit}
     render();
 
     setTimeout(() => {
-      if (phase !== PHASE_BATTLE || turn !== P2) {
-        thinking = false;
-        return;
-      }
+      thinking = false;
+      if (phase !== PHASE_BATTLE || turn !== P2) return;
 
       const move = cpuChooseMove();
-      thinking = false;
-
       if (!move) {
         handlePassOrEnd();
         render();
@@ -780,7 +739,7 @@ button{font:inherit}
       }
 
       doMove(move.x, move.y);
-    }, delay);
+    }, 650);
   }
 
   function endGame() {
@@ -811,14 +770,14 @@ button{font:inherit}
 
     p1ScoreEl.textContent = p1Score;
     p2ScoreEl.textContent = p2Score;
+    stock3El.textContent = playerPlace3;
+    stock2El.textContent = playerPlace2;
 
     if (phase === PHASE_PLACE) {
       phaseLabelEl.textContent = "配置フェーズ";
       turnLabelEl.textContent = turn === P1 ? "あなた" : "チー娘A";
       turnBadgeEl.className = "badge " + (turn === P1 ? "goldBadge" : "silverBadge");
       stockRowEl.classList.remove("hidden");
-      stock3El.textContent = Math.max(playerPlace3, 0);
-      stock2El.textContent = Math.max(playerPlace2, 0);
     } else {
       phaseLabelEl.textContent = "対戦フェーズ";
       turnLabelEl.textContent = turn === P1 ? "あなた" : "チー娘A";
@@ -826,7 +785,7 @@ button{font:inherit}
       stockRowEl.classList.add("hidden");
     }
 
-    const validMoves = phase === PHASE_BATTLE && showHints && turn === P1 ? getValidMoves(P1) : [];
+    const validMoves = (phase === PHASE_BATTLE && showHints && turn === P1) ? getValidMoves(P1) : [];
 
     for (let y = 0; y < SIZE; y++) {
       for (let x = 0; x < SIZE; x++) {
@@ -840,7 +799,7 @@ button{font:inherit}
         else cell.classList.add("score1");
 
         if (phase === PHASE_PLACE && turn === P1 && points[y][x] === 0) {
-          cell.classList.add("emptyPlaceable");
+          cell.classList.add("placeable");
         }
 
         const isValid = validMoves.some(m => m.x === x && m.y === y);
@@ -864,11 +823,8 @@ button{font:inherit}
         }
 
         cell.addEventListener("click", () => {
-          if (phase === PHASE_PLACE) {
-            handlePlaceClick(x, y);
-          } else if (phase === PHASE_BATTLE && turn === P1 && !thinking) {
-            doMove(x, y);
-          }
+          if (phase === PHASE_PLACE) handlePlaceClick(x, y);
+          else if (phase === PHASE_BATTLE && turn === P1 && !thinking) doMove(x, y);
         });
 
         boardEl.appendChild(cell);
@@ -878,7 +834,6 @@ button{font:inherit}
 
   restartBtn.addEventListener("click", init);
   playAgainBtn.addEventListener("click", init);
-
   hintBtn.addEventListener("click", () => {
     showHints = !showHints;
     hintBtn.textContent = `置ける場所: ${showHints ? "ON" : "OFF"}`;
